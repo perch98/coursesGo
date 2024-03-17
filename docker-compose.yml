@@ -1,0 +1,56 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+
+version: '3.8'
+
+# Define services
+services:
+
+  # App Service
+  app:
+    container_name: full_app
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+    depends_on:
+      - fullstack-postgres
+    networks:
+      - fullstack
+    env_file:
+      - .profile
+
+  fullstack-postgres:
+    image: postgres:latest
+    container_name: full_db_postgres
+    environment:
+      - POSTGRES_USER=greenlight
+      - POSTGRES_PASSWORD=pa55word
+      - POSTGRES_DB=coursego
+    ports:
+      - '5432:5432'
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+    networks:
+      - fullstack
+    
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: root@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    depends_on:
+      - fullstack-postgres
+    ports:
+      - "5050:80"
+    networks:
+      - fullstack
+    restart: unless-stopped
+volumes:
+  api:
+  database_postgres:  
+networks:
+  fullstack:
+    driver: bridge
